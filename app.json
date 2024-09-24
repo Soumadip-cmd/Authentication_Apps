@@ -13,7 +13,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "package": "com.anonymous.authApp"
+      "package": "com.anonymous.authApp",
+      "bundleIdentifier": "com.anonymous.authApp"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +30,7 @@
       "eas": {
         "projectId": "55724e40-27a3-4df7-925e-224c91cc824c"
       }
-    }
+    },
+    "scheme": "Gyanoda"
   }
 }

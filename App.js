@@ -2,27 +2,63 @@
 // android-ClientId:1035545013004-etpoa0p6t8be3uflcolq1g7jjd84fuo4.apps.googleusercontent.com
 // ios-ClientId:1035545013004-m8vqnen4o8ts8b3tnevke5bhkesclm9l.apps.googleusercontent.com
 
-import { StatusBar } from 'expo-status-bar';
-import * as WebBrowser from 'expo-web-browser';
-import * as React from 'react';
-import * as Google from 'expo-auth-session/providers/google'
-import { Button, StyleSheet, Text, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
+import * as React from "react";
+import * as Google from "expo-auth-session/providers/google";
+import { Button, StyleSheet, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
-WebBrowser.maybeCompleteAuthSession()
+WebBrowser.maybeCompleteAuthSession();
 
 export default function App() {
-  const [userInfo,sretUserInfo]=React.useState(null)
-  const [request,response,promptAsync]=Google.useAuthRequest({
-    webClientId:"1035545013004-p0tlf28nbm8847ivn29dr1r6cio30r7n.apps.googleusercontent.com",
-    androidClientId:"1035545013004-etpoa0p6t8be3uflcolq1g7jjd84fuo4.apps.googleusercontent.com",
-    iosClientId:"1035545013004-m8vqnen4o8ts8b3tnevke5bhkesclm9l.apps.googleusercontent.com",
-  })
+  const [userInfo, setUserInfo] = React.useState(null);
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId:
+      "1035545013004-p0tlf28nbm8847ivn29dr1r6cio30r7n.apps.googleusercontent.com",
+    androidClientId:
+      "1035545013004-etpoa0p6t8be3uflcolq1g7jjd84fuo4.apps.googleusercontent.com",
+    iosClientId:
+      "1035545013004-m8vqnen4o8ts8b3tnevke5bhkesclm9l.apps.googleusercontent.com",
+  });
+
+  React.useEffect(() => {
+    handleSigninGoogle();
+  }, [response]);
+
+  async function handleSigninGoogle() {
+    const user = await AsyncStorage.getItem("@user");
+    if (!user) {
+      if (response?.type === "success") {
+        await getUserInfo(response.authentication.accessToken);
+      }
+    } else {
+      setUserInfo(JSON.parse(user));
+    }
+  }
+
+  const getUserInfo = async (token) => {
+    if (!token) return;
+    // from yt
+    const url = "https://www.googleapis.com/userinfo/v2/me";
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const user = await response.json();
+      await AsyncStorage.setItem("@user", JSON.stringify(user));
+      setUserInfo(user);
+    } catch (error) {}
+  };
   return (
     <View style={styles.container}>
+      <Text>{JSON.stringify(userInfo, null, 2)}</Text>
       <Text>Auth Verification</Text>
-      <Button title='sign in with google' onPress={promptAsync}/>
+      <Button title="sign in with google" onPress={() => promptAsync()} />
+      <Button
+        title="delete local storage"
+        onPress={() => AsyncStorage.removeItem("@user")}
+      />
       <StatusBar style="auto" />
     </View>
   );
@@ -31,8 +67,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
